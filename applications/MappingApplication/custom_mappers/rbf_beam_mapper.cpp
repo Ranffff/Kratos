@@ -13,13 +13,12 @@
 // See PhD Thesis Tianyang Wang Chapter 5
 // Collaborator:     Based on the theory by Ahrem, Beckert, and Wendland (2007)
 
-#pragma once
-
 // System includes
 
 // External includes
 #include "utilities/math_utils.h"
 #include "geometries/line_3d_2.h"
+
 // Project includes
 #include "rbf_beam_mapper.h"
 #include "mapping_application_variables.h"
@@ -29,88 +28,70 @@
 namespace Kratos
 {
 
-template<class TSparseSpace, class TDenseSpace>
-void RBFBeamMapper<TSparseSpace, TDenseSpace>::UpdateInterface(
-    Kratos::Flags MappingOptions, 
-    double SearchRadius)
+RBFBeamMapperInterfaceInfo::RBFBeamMapperInterfaceInfo(const double SupportRadius)
+    : MapperInterfaceInfo(), 
+      mSupportRadius(SupportRadius)
 {
-    if (MappingOptions.Is(MapperFlags::REMESHED)) {
-        this->Initialize();
-    }
-
-    BuildRBFSystemMatrix();
+    // Initialize base class
+    // Pre-allocate memory for mSupportNodes to improve performance (e.g., reserve 15-20 nodes)
 }
 
-template<class TSparseSpace, class TDenseSpace>
-void RBFBeamMapper<TSparseSpace, TDenseSpace>::Map(
-    const Variable<array_1d<double, 3>>& rOriginVariableDisp,
-    const Variable<array_1d<double, 3>>& rOriginVariableRot,
-    const Variable<array_1d<double, 3>>& rDestinationVariable,
-    Kratos::Flags MappingOptions)
+RBFBeamMapperInterfaceInfo::RBFBeamMapperInterfaceInfo(const CoordinatesArrayType& rCoordinates,
+                                                       const IndexType SourceLocalSystemIndex,
+                                                       const IndexType DestinationLocalSystemIndex,
+                                                       const double SupportRadius)
+    : MapperInterfaceInfo(rCoordinates, SourceLocalSystemIndex, DestinationLocalSystemIndex),
+      mSupportRadius(SupportRadius)
 {
-    const SizeType num_origin_nodes = this->mrModelPartOrigin.NumberOfNodes();
-    const SizeType system_size = 6 * num_origin_nodes + 4 * 3; 
-
-    VectorType rhs_vector = ZeroVector(system_size);
-    
-    // 1. Assemble RHS vector with displacements and rotations
-    // Loop over mrModelPartOrigin nodes to fill rhs_vector
-
-    // 2. Solve the linear system
-    // TDenseSpace::Solve(mpSystemMatrix, mRBFCoefficients, rhs_vector);
-
-    // 3. Interpolate at destination nodes
-    for (auto& r_node : this->mrModelPartDestination.Nodes()) {
-        array_1d<double, 3> interpolated_disp = ZeroVector(3);
-        
-        // Evaluate RBF sum for the current destination node
-        
-        r_node.FastGetSolutionStepValue(rDestinationVariable) = interpolated_disp;
-    }
+    // Initialize base class with local coordinates and system indices
+    // Pre-allocate memory for mSupportNodes
 }
 
-template<class TSparseSpace, class TDenseSpace>
-void RBFBeamMapper<TSparseSpace, TDenseSpace>::InverseMap(
-    const Variable<array_1d<double, 3>>& rOriginVariableForce,
-    const Variable<array_1d<double, 3>>& rOriginVariableMoment,
-    const Variable<array_1d<double, 3>>& rDestinationVariable,
-    Kratos::Flags MappingOptions)
+MapperInterfaceInfo::Pointer RBFBeamMapperInterfaceInfo::Create() const 
 {
-    // Apply conservative mapping using the transpose of the interpolation operators
+    // Create and return a Kratos::make_shared pointer of RBFBeamMapperInterfaceInfo
+    // Pass mSupportRadius to the new instance
+    return nullptr;
 }
 
-template<class TSparseSpace, class TDenseSpace>
-void RBFBeamMapper<TSparseSpace, TDenseSpace>::BuildRBFSystemMatrix()
+MapperInterfaceInfo::Pointer RBFBeamMapperInterfaceInfo::Create(const CoordinatesArrayType& rCoordinates,
+                                                                const IndexType SourceLocalSystemIndex,
+                                                                const IndexType DestinationLocalSystemIndex) const 
 {
-    const SizeType num_origin_nodes = this->mrModelPartOrigin.NumberOfNodes();
-    const SizeType system_size = 6 * num_origin_nodes + 4 * 3; 
-
-    // Resize and initialize system matrix
-    // MatrixType A_matrix = ZeroMatrix(system_size, system_size);
-
-    // Block assembly: A, P, P^T, 0
-    for (SizeType i = 0; i < num_origin_nodes; ++i) {
-        for (SizeType j = 0; j < num_origin_nodes; ++j) {
-            // Compute distance between node i and node j
-            // Evaluate kernel and its derivatives
-            // Fill translation-translation block
-            // Fill translation-rotation block
-            // Fill rotation-translation block
-            // Fill rotation-rotation block
-        }
-    }
-
-    // Add polynomial terms P
+    // Create and return a Kratos::make_shared pointer of RBFBeamMapperInterfaceInfo
+    // Pass the coordinates, indices, and mSupportRadius to the new instance
+    return nullptr;
 }
 
-template<class TSparseSpace, class TDenseSpace>
-double RBFBeamMapper<TSparseSpace, TDenseSpace>::EvaluateKernel(const double Distance) const
+void RBFBeamMapperInterfaceInfo::ProcessSearchResult(const InterfaceObject& rInterfaceObject)
 {
-    // Placeholder for kernel evaluation (e.g., Gaussian, Wendland)
-    return 0.0;
+    // Call the base class method to save the raw search result
+    // e.g., SaveSearchResult(rInterfaceObject, false);
 }
 
-// Template instantiation
-template class RBFBeamMapper<MapperDefinitions::SparseSpaceType, MapperDefinitions::DenseSpaceType>;
+void RBFBeamMapperInterfaceInfo::ProcessSearchResultForApproximation(const InterfaceObject& rInterfaceObject) 
+{
+    // 1. Get the base geometry from rInterfaceObject
+    // 2. Iterate through all nodes of this geometry
+    // 3. For each node, compute the Euclidean distance to the target point ( this->Coordinates() )
+    // 4. If distance <= mSupportRadius:
+    //      a. Check if this node ID is already stored in mSupportNodes to avoid duplicates
+    //      b. If it is new, emplace it into mSupportNodes
+    // 5. Sort mSupportNodes by distance (closest first) using the overloaded operator<
+    // 6. If mSupportNodes is not empty, call this->SetLocalSearchWasSuccessful()
+}
 
-}  // namespace Kratos.
+const std::vector<RBFBeamMapperInterfaceInfo::SupportNodeData>& RBFBeamMapperInterfaceInfo::GetSupportNodes() const
+{
+    // Return the internal mSupportNodes vector
+    return mSupportNodes;
+}
+
+// 注意：这里删除了 override
+double RBFBeamMapperInterfaceInfo::GetSupportRadius() const 
+{
+    // Return the internal support radius
+    return mSupportRadius;
+}
+
+} // namespace Kratos

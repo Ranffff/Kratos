@@ -45,12 +45,16 @@ public:
         double Distance;
         array_1d<double, 3> Coordinates;
 
-        SupportNodeData(const Node* p_node, double dist, const array_1d<double, 3>& coords);
-        bool operator<(const SupportNodeData& rOther) const;
+        SupportNodeData(const Node* p_node, double dist, const array_1d<double, 3>& coords)
+            : pNode(p_node), Distance(dist), Coordinates(coords) {}
+
+        bool operator<(const SupportNodeData& rOther) const {
+            return Distance < rOther.Distance;
+        }
     };
 
     explicit RBFBeamMapperInterfaceInfo(const double SupportRadius = 1.0);
-    
+
     explicit RBFBeamMapperInterfaceInfo(const CoordinatesArrayType& rCoordinates,
                                         const IndexType SourceLocalSystemIndex,
                                         const IndexType DestinationLocalSystemIndex,
@@ -75,7 +79,9 @@ public:
 private:
     double mSupportRadius;
     std::vector<SupportNodeData> mSupportNodes;
-};
+
+}; 
+
 
 
 template<class TSparseSpace, class TDenseSpace>
