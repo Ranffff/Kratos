@@ -1,0 +1,13 @@
+rf "${KRATOS_BUILD}"
+mkdir -p "${KRATOS_BUILD}"
+cd "${KRATOS_BUILD}"
+
+cmake -H"${KRATOS_SOURCE}" \
+      -B"${KRATOS_BUILD}" \
+      -DCMAKE_BUILD_TYPE=${KRATOS_BUILD_TYPE} \
+      -DCMAKE_CXX_STANDARD=17 \
+      -DKRATOS_PYTHON_INTERFACE=ON \
+      -DBOOST_ROOT="${BOOST_ROOT}" \
+      -DUSE_MPI=OFF
+
+cmake --build "${KRATOS_BUILD}" --target install -- -j1
