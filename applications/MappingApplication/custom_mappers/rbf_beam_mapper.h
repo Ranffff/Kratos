@@ -21,13 +21,12 @@
 // Project includes
 #include "mappers/mapper.h"
 #include "custom_searching/interface_communicator.h"
-#include "custom_utilities/mapper_local_system.h"
-#include "custom_utilities/radial_basis_functions_utilities.h"
 #include "custom_utilities/interface_vector_container.h"
+#include "custom_utilities/mapper_local_system.h"
 
 #include "custom_utilities/projection_utilities.h"
+#include "custom_utilities/beam_mapper_utilities.h"
 #include "utilities/geometrical_projection_utilities.h"
-
 
 namespace Kratos
 {
@@ -72,7 +71,7 @@ public:
 
     void ProcessSearchResultForApproximation(const InterfaceObject& rInterfaceObject) override;
 
-    const std::vector<SupportNodeData>& GetSupportNodes() const;
+    std::vector<SupportNodeData>& GetSupportNodes() const;
 
     double GetSupportRadius() const;
 

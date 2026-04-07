@@ -51,7 +51,7 @@ MapperInterfaceInfo::Pointer RBFBeamMapperInterfaceInfo::Create() const
 {
     // Create and return a Kratos::make_shared pointer of RBFBeamMapperInterfaceInfo
     // Pass mSupportRadius to the new instance
-    return nullptr;
+    return Kratos::make_shared<RBFBeamMapperInterfaceInfo>(mSupportRadius);
 }
 
 MapperInterfaceInfo::Pointer RBFBeamMapperInterfaceInfo::Create(const CoordinatesArrayType& rCoordinates,
@@ -60,7 +60,7 @@ MapperInterfaceInfo::Pointer RBFBeamMapperInterfaceInfo::Create(const Coordinate
 {
     // Create and return a Kratos::make_shared pointer of RBFBeamMapperInterfaceInfo
     // Pass the coordinates, indices, and mSupportRadius to the new instance
-    return nullptr;
+    return Kratos::make_shared<RBFBeamMapperInterfaceInfo>(rCoordinates, SourceLocalSystemIndex, DestinationLocalSystemIndex, mSupportRadius);
 }
 
 void RBFBeamMapperInterfaceInfo::ProcessSearchResult(const InterfaceObject& rInterfaceObject)
@@ -81,13 +81,12 @@ void RBFBeamMapperInterfaceInfo::ProcessSearchResultForApproximation(const Inter
     // 6. If mSupportNodes is not empty, call this->SetLocalSearchWasSuccessful()
 }
 
-const std::vector<RBFBeamMapperInterfaceInfo::SupportNodeData>& RBFBeamMapperInterfaceInfo::GetSupportNodes() const
+std::vector<RBFBeamMapperInterfaceInfo::SupportNodeData>& RBFBeamMapperInterfaceInfo::GetSupportNodes() const
 {
     // Return the internal mSupportNodes vector
     return mSupportNodes;
 }
 
-// 注意：这里删除了 override
 double RBFBeamMapperInterfaceInfo::GetSupportRadius() const 
 {
     // Return the internal support radius
