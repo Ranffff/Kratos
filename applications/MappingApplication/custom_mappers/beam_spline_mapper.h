@@ -7,7 +7,7 @@
 //  License:         BSD License
 //                   Kratos default license: kratos/license.txt
 //
-// Main authors:
+// Main authors:    Qinfei Ran - Initial development
 // Contributor:
 
 // This mapper is created with RBF technique with Cubic Kernel
@@ -358,6 +358,10 @@ private:
         const std::vector<double>& rSourceCoordinates,
         const double ProjectionCoordinate) const;
 
+    VectorType BuildEvaluationDerivativeRow(
+        const std::vector<double>& rSourceCoordinates,
+        const double ProjectionCoordinate) const;
+
     VectorType BuildRightHandSide(
         const std::vector<double>& rDisplacements,
         const std::vector<double>& rRotations) const;
@@ -438,6 +442,7 @@ private:
 
     VectorType EvaluatePointDisplacementLocal(
         const VectorType& rEvaluationRow,
+        const VectorType& rEvaluationDerivativeRow,
         const VectorType& rSplineCoefficientsY,
         const VectorType& rSplineCoefficientsZ,
         const double AxialDisplacement,
