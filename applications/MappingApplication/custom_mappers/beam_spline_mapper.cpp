@@ -1577,10 +1577,16 @@ BeamSplineMapper<TSparseSpace, TDenseSpace>::EvaluatePointDisplacementLocal(
     tmp_rotation = prod(rotation_x, rotation_z);
     rotation_matrix = prod(tmp_rotation, rotation_y);
 
+    // get R * rOffset 
     VectorType rotated_offset(3, 0.0);
     TDenseSpace::Mult(rotation_matrix, rOffsetVectorLocal, rotated_offset);
 
+
     VectorType local_displacement(3);
+    // Δr = R * rOffset - rOffset
+    //       = (R - I) * rOffset
+    // u_local = u_centerline + Δr
+    //         = u_centerline + (R - I) * rOffset
     local_displacement(0) = centerline_displacement(0) + rotated_offset(0) - rOffsetVectorLocal(0);
     local_displacement(1) = centerline_displacement(1) + rotated_offset(1) - rOffsetVectorLocal(1);
     local_displacement(2) = centerline_displacement(2) + rotated_offset(2) - rOffsetVectorLocal(2);
